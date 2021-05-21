@@ -17,7 +17,7 @@ $app->post('/master/pelanggan/search[/{criteria}]', function (Request $request, 
 
     $criteria = $request->getAttribute('criteria');
     if($criteria!=null || $criteria!=''){
-        $query = "SELECT * FROM pelanggan where kode LIKE '%$criteria%' OR nama_pelanggan LIKE '%$criteria%'";
+        $query = "SELECT * FROM pelanggan where kode LIKE '%$criteria' OR nama_pelanggan LIKE '%$criteria'";
     }
     else{
         $query = "SELECT * FROM pelanggan";
