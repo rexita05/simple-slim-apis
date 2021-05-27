@@ -48,7 +48,7 @@ $app->post('/master/pelanggan/search[/{criteria}]', function (Request $request, 
     }
 });
 
-//get list all pelanggan
+//get list all pelanggan (Belum dipakai)
 $app->post('/master/pelanggan/list_all', function (Request $request, Response $reponse) {
     $sql = "SELECT * FROM pelanggan";
 
@@ -103,32 +103,47 @@ $app->get('/master/pelanggan/getPerkode/{id}', function (Request $request, Respo
     }
 });
 
-//make a post request
-$app->post('/api/users/add', function (Request $request, Response $reponse, array $args) {
-    $first_name = $request->getParam('first_name');
-    $last_name = $request->getParam('last_name');
-    $phone = $request->getParam('phone');
-    $email = $request->getParam('email');
-    $address = $request->getParam('address');
-    $city = $request->getParam('city');
-    $state = $request->getParam('state');
+//insert pelanggan
+$app->post('/master/pelanggan/insert', function (Request $request, Response $reponse, array $args) {
+    $id = $request->getParam('id');
+    $kode = $request->getParam('kode');
+    $layanan = $request->getParam('layanan');
+    $nama_pelanggan = $request->getParam('nama_pelanggan');
+    $tagihan = $request->getParam('tagihan');
+    $terbilang = $request->getParam('terbilang');
+    $operasional = $request->getParam('operasional');
 
     try {
-        //get db object
         $db = new db();
-        //conncect
+        //connect
         $pdo = $db->connect();
+        // Cek Data digunakan apa belum
+        // $sql = "SELECT kode FROM pelanggan WHERE kode=? ";
+        // $st = $pdo->prepare($sql);
+        // $result = $st->execute(array($kode));
+        // $rows = $st->fetchAll(PDO::FETCH_ASSOC); 
+        // if (count($rows) > 0) {
+        //     throw new Exception('Error kode pelanggan sudah digunakan.');
+        // }
 
+        //Insert pelanggan
+        $sql = "INSERT INTO pelanggan (id, kode, layanan, nama_pelanggan, tagihan, terbilang, operasional) VALUES (?,?,?,?,?,?,?)";
 
-        $sql = "INSERT INTO users (first_name, last_name, phone,email,address,city,state) VALUES (?,?,?,?,?,?,?)";
+        $result = $pdo->prepare($sql)->execute([$id, $kode, $layanan, $nama_pelanggan, $tagihan, $terbilang, $operasional]);
 
-
-        $pdo->prepare($sql)->execute([$first_name, $last_name, $phone, $email, $address, $city, $state]);
-
-        echo '{"notice": {"text": "User '. $first_name .' has been just added now"}}';
         $pdo = null;
-    } catch (\PDOException $e) {
-        echo '{"error": {"text": ' . $e->getMessage() . '}}';
+        if ($result['message'] == '') {
+            $list['error'] = false;
+            $list['message'] = 'Penyimpanan Pelanggan berhasil.';
+        } else {
+            $list['error'] = true;
+            $list['message'] = 'Penyimpanan Pelanggan gagal. '.$result['message'];
+        }
+
+        echo json_encode(array('status'=>$list));
+    }
+    catch (\PDOException $e){
+        echo '{"error": {"message": ' . $e->getMessage() . '}}';
     }
 });
 
