@@ -148,7 +148,7 @@ $app->post('/master/pelanggan/insert', function (Request $request, Response $rep
 });
 
 //make a post request
-$app->put('/api/users/update/{id}', function (Request $request, Response $reponse, array $args) {
+$app->post('/master/pelanggan/update', function (Request $request, Response $reponse, array $args) {
     $id = $request->getAttribute('id');
 
     $first_name = $request->getParam('first_name');
