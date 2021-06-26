@@ -104,7 +104,7 @@ $app->get('/master/pelanggan/getPerkode/{id}', function (Request $request, Respo
 });
 
 //insert pelanggan
-$app->post('/master/pelanggan/insert', function (Request $request, Response $reponse, array $args) {
+$app->post('/master/pelanggan/insert', function ($request) {
     $id = $request->getParam('id');
     $kode = $request->getParam('kode');
     $layanan = $request->getParam('layanan');
@@ -147,37 +147,46 @@ $app->post('/master/pelanggan/insert', function (Request $request, Response $rep
     }
 });
 
-//make a post request
-$app->post('/master/pelanggan/update/', function (Request $request, Response $reponse, array $args) {
-    $id = $request->getAttribute('id');
-
-    $first_name = $request->getParam('first_name');
-    $last_name = $request->getParam('last_name');
-    $phone = $request->getParam('phone');
+//update pelanggan
+$app->post('/master/pelanggan/update', function ($request) {
+    $id = $request->getParam('id');
+    $kode = $request->getParam('kode');
+    $layanan = $request->getParam('layanan');
+    $nama_pelanggan = $request->getParam('nama_pelanggan');
+    $tagihan = $request->getParam('tagihan');
+    $terbilang = $request->getParam('terbilang');
+    $operasional = $request->getParam('operasional');
 
     try {
         //get db object
         $db = new db();
-        //conncect
+        //connect
         $pdo = $db->connect();
 
 
-        $sql = "UPDATE  users SET first_name =?, last_name=?, phone=? WHERE id=?";
+        $sql = "UPDATE pelanggan SET kode=?, layanan=?, nama_pelanggan=?, tagihan=?, terbilang=?, operasional=? WHERE id=?";
 
+        $result = $pdo->prepare($sql)->execute(array($kode, $layanan, $nama_pelanggan, $tagihan, $terbilang, $operasional, $id));
 
-        $pdo->prepare($sql)->execute([$first_name, $last_name, $phone, $id]);
-
-        echo '{"notice": {"text": "User '. $first_name .' has been just updated now"}}';
         $pdo = null;
+        if ($result['message'] == '') {
+            $list['error'] = false;
+            $list['message'] = 'Update Pelanggan berhasil.';
+        } else {
+            $list['error'] = true;
+            $list['message'] = 'Update Pelanggan gagal. '.$result['message'];
+        }
+
+        echo json_encode(array('status'=>$list));
     } catch (\PDOException $e) {
-        echo '{"error": {"text": ' . $e->getMessage() . '}}';
+        echo '{"error": {"message": ' . $e->getMessage() . '}}';
     }
 });
 
 
-//make a post request
-$app->delete('/api/users/delete/{id}', function (Request $request, Response $reponse, array $args) {
-    $id = $request->getAttribute('id');
+//delete pelanggan
+$app->post('/master/pelanggan/delete', function ($request) {
+    $id = $request->getParam('id');
 
     try {
         //get db object
@@ -185,12 +194,19 @@ $app->delete('/api/users/delete/{id}', function (Request $request, Response $rep
         //conncect
         $pdo = $db->connect();
 
-        $sql = "DELETE FROM users WHERE id=?";
+        $sql = "DELETE FROM pelanggan WHERE id=?";
 
-        $pdo->prepare($sql)->execute([$id]);
+        $result=$pdo->prepare($sql)->execute([$id]);
         $pdo = null;
+        if ($result['message'] == '') {
+            $list['error'] = false;
+            $list['message'] = 'Hapus Pelanggan berhasil.';
+        } else {
+            $list['error'] = true;
+            $list['message'] = 'Hapus Pelanggan gagal. '.$result['message'];
+        }
 
-        echo '{"notice": {"text": "User with '. $id .' has been just deleted now"}}';
+        echo json_encode(array('status'=>$list));
 
     } catch (\PDOException $e) {
         echo '{"error": {"text": ' . $e->getMessage() . '}}';
