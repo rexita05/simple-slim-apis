@@ -79,6 +79,7 @@ $app->post('/master/pelanggan/list_all', function (Request $request, Response $r
 $app->get('/master/pelanggan/getPerkode/{id}', function (Request $request, Response $reponse) {
     $id = $request->getAttribute('id');
     $sql = "SELECT * FROM pelanggan where id = '$id'";
+    $list['message'] = '';
 
     try {
         $db = new db();
@@ -88,18 +89,18 @@ $app->get('/master/pelanggan/getPerkode/{id}', function (Request $request, Respo
         $pdo = null;
         
         if(!$result) {
-            echo json_encode(array('status'=>'error', 'status_code'=>'300', 'message'=>'Gagal mengambil data Pelanggan'));
+            echo json_encode(['status'=>'error', 'status_code'=>'300', 'message'=>'Gagal mengambil data Pelanggan']);
         }
         else{
             if($result==null) {
-                echo json_encode(array('status'=>'error', 'status_code'=>'300', 'message'=>'Data Pelanggan kosong'));
+                echo json_encode(['status'=>'error', 'status_code'=>'300', 'message'=>'Data Pelanggan kosong']);
             }else{
-                echo json_encode(array('status'=>'success', 'status_code'=>'200', 'data'=>$users));
+                echo json_encode(['status'=>'success', 'status_code'=>'200', 'data'=>$users]);
             }
         }
     }
     catch (\PDOException $e) {
-        echo '{"message":{"response":'.$e->getMessage().'}}';
+        $list['message'] = $e->getMessage();
     }
 });
 
@@ -117,33 +118,21 @@ $app->post('/master/pelanggan/insert', function ($request) {
         $db = new db();
         //connect
         $pdo = $db->connect();
-        // Cek Data digunakan apa belum
-        // $sql = "SELECT kode FROM pelanggan WHERE kode=? ";
-        // $st = $pdo->prepare($sql);
-        // $result = $st->execute(array($kode));
-        // $rows = $st->fetchAll(PDO::FETCH_ASSOC); 
-        // if (count($rows) > 0) {
-        //     throw new Exception('Error kode pelanggan sudah digunakan.');
-        // }
-
         //Insert pelanggan
         $sql = "INSERT INTO pelanggan (id, kode, layanan, nama_pelanggan, tagihan, terbilang, operasional) VALUES (?,?,?,?,?,?,?)";
-
-        $result = $pdo->prepare($sql)->execute([$id, $kode, $layanan, $nama_pelanggan, $tagihan, $terbilang, $operasional]);
-
+        $result = $pdo->prepare($sql)->execute(array($id, $kode, $layanan, $nama_pelanggan, $tagihan, $terbilang, $operasional));
         $pdo = null;
-        if ($result['message'] == '') {
+        if ($result) {
             $list['error'] = false;
             $list['message'] = 'Penyimpanan Pelanggan berhasil.';
         } else {
             $list['error'] = true;
             $list['message'] = 'Penyimpanan Pelanggan gagal. '.$result['message'];
         }
-
-        echo json_encode(array('status'=>$list));
+        echo json_encode(['status'=>$list]);
     }
     catch (\PDOException $e){
-        echo '{"error": {"message": ' . $e->getMessage() . '}}';
+        $list['message'] = $e->getMessage();
     }
 });
 
@@ -162,27 +151,23 @@ $app->post('/master/pelanggan/update', function ($request) {
         $db = new db();
         //connect
         $pdo = $db->connect();
-
-
         $sql = "UPDATE pelanggan SET kode=?, layanan=?, nama_pelanggan=?, tagihan=?, terbilang=?, operasional=? WHERE id=?";
-
         $result = $pdo->prepare($sql)->execute(array($kode, $layanan, $nama_pelanggan, $tagihan, $terbilang, $operasional, $id));
-
         $pdo = null;
-        if ($result['message'] == '') {
+        if ($result) {
             $list['error'] = false;
             $list['message'] = 'Update Pelanggan berhasil.';
         } else {
             $list['error'] = true;
             $list['message'] = 'Update Pelanggan gagal. '.$result['message'];
         }
-
-        echo json_encode(array('status'=>$list));
-    } catch (\PDOException $e) {
-        echo '{"error": {"message": ' . $e->getMessage() . '}}';
+        echo json_encode(['status'=>$list]);
+    }
+    catch (\PDOException $e) {
+        $this->conn->rollback();
+        $list['message'] = $e->getMessage();
     }
 });
-
 
 //delete pelanggan
 $app->post('/master/pelanggan/delete', function ($request) {
@@ -193,23 +178,20 @@ $app->post('/master/pelanggan/delete', function ($request) {
         $db = new db();
         //connect
         $pdo = $db->connect();
-
         $sql = "DELETE FROM pelanggan WHERE id=?";
-
         $result=$pdo->prepare($sql)->execute([$id]);
         $pdo = null;
-        if ($result['message'] == '') {
+        if ($result) {
             $list['error'] = false;
             $list['message'] = 'Hapus Pelanggan berhasil.';
         } else {
             $list['error'] = true;
             $list['message'] = 'Hapus Pelanggan gagal. '.$result['message'];
         }
-
-        echo json_encode(array('status'=>$list));
-
-    } catch (\PDOException $e) {
-        echo '{"error": {"text": ' . $e->getMessage() . '}}';
+        echo json_encode(['status'=>$list]);
+    }
+    catch (\PDOException $e) {
+        $list['message'] = $e->getMessage();
     }
 });
 
