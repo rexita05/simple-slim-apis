@@ -191,7 +191,7 @@ $app->post('/master/pelanggan/delete', function ($request) {
     try {
         //get db object
         $db = new db();
-        //conncect
+        //connect
         $pdo = $db->connect();
 
         $sql = "DELETE FROM pelanggan WHERE id=?";
